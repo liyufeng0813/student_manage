@@ -273,7 +273,6 @@ def student_detail(request):
         return redirect('/index')
 
 
-
 @auth
 def teacher(request):
     if request.method == 'GET':
