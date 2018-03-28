@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<style>
+    img{
+        width: 150px;
+        height: 120px;
+    }
+</style>
+<body>
+
+<h3>form表单提交文件</h3>
+<a href="/upload">表单提交</a>
+<br>
+<hr>
+
+<h3>js提交文件</h3>
+<input type="file" id="file">
+<br>
+<input type="button" value="原生js提交" onclick="upload();">
+<input type="button" value="jq提交" onclick="upload_jq();">
+<br>
+<hr>
+
+<h3>iframe加form表单提交文件</h3>
+<form action="/upload_ajax" method="post" target="iframe_1" enctype="multipart/form-data">
+    {% csrf_token %}
+    <iframe id="ifr" name="iframe_1" src="" frameborder="1" style="display: none;" onload="loadIframe();"></iframe>
+    <input type="file" name="file">
+    <input type="submit" value="submit">
+</form>
+<br>
+<hr>
+
+<h3>图片列表</h3>
+<div id="imgs">
+    {% for item in img_list %}
+        <img src="{{ item.path }}" alt="">
+    {% endfor %}
+</div>
+
+
+<script src="/static/js/jquery-3.3.1.js"></script>
+<script>
+    function upload() {
+        var dict = new FormData();
+        dict.append('file', document.getElementById('file').files[0]);
+
+        var xml = new XMLHttpRequest();
+        xml.open('post', '/upload_ajax', true);
+        xml.send(dict);
+        xml.onreadystatechange = function () {
+            if(xml.readyState === 4 && xml.status === 200) {
+                var obj = JSON.parse(xml.responseText);
+                if (obj.status) {
+                    var img = document.createElement('img');
+                    img.src = '/' + obj.path;
+                    document.getElementById('imgs').appendChild(img);
+                    $('#file').val('');
+                }
+            }
+        }
+    }
+    function upload_jq() {
+        var dict = new FormData();
+        dict.append('file', document.getElementById('file').files[0]);
+        
+        $.ajax({
+            url: '/upload_ajax',
+            type: 'POST',
+            data: dict,
+            processData: false,
+            contentType: false,
+            success: function (data) {
+                var response = JSON.parse(data);
+                if (response.status){
+                    var img = document.createElement('img');
+                    img.src = '/' + response.path;
+                    $('#imgs').append(img);
+                    $('#file').val('');
+                }
+            }
+        })
+    }
+    function loadIframe() {
+        // onload会监听iframe内部是否加载了，如果加载了，就获取内部内容。
+        var data_json = $('#ifr').contents().find('body').text();   // 需要到contents里面拿数据。
+        var data = JSON.parse(data_json);
+        var img = document.createElement('img');
+        img.src = '/' + data.path;
+        $('#imgs').append(img);
+        $('form input[name="file"]').val('');
+    }
+</script>
+
+</body>
+</html>

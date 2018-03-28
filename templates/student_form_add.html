@@ -1,0 +1,39 @@
+{% extends 'layout.html' %}
+
+
+{% block css %}
+{% endblock %}
+
+
+{% block content %}
+    <h3 style="margin-bottom: 10px;">student表单提交</h3>
+    <form action="/student_form_add" method="post">
+        {% csrf_token %}
+        <label for="name">名字</label>
+        <input type="text" id="name" name="student_name">
+        <br>
+        <label for="email">邮箱</label>
+        <input type="text" id="eamil" name="student_email">
+        <br>
+        <label for="class">班级</label>
+        <select name="cls" id="class">
+            <option value="0">请选择一个班级</option>
+            {% for class in classes_data %}
+                <option value="{{ class.id }}">{{ class.caption }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <input type="submit" value="submit">
+        <br>
+        <b>{{ message }}</b>
+    </form>
+{% endblock %}
+
+
+{% block js %}
+<script>
+    $(function () {
+        $('#menu_student').addClass('active');
+    })
+</script>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'register_login.html' %}
+
+{% block form %}
+<div id="form">
+    <h3>人员信息管理</h3>
+    <form action="/login/" method="post">
+        {% csrf_token %}
+        <input type="text" name="username" placeholder="用户名">
+        <br>
+        <input type="password" name="password" placeholder="密码">
+        <br>
+        <input type="submit" value="登录">
+        <span style="color:red">{{ message }}</span>
+    </form>
+</div>
+<a href="register">注册</a>
+{% endblock %}

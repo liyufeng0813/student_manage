@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<input type="button" onclick="jsonpRequest();" value="jsonp跨域请求">
+
+<script>
+    // 动态创建script标签
+    TAG = null;
+    function jsonpRequest() {
+        TAG = document.createElement('script');
+        TAG.src = "";
+         // 回调函数名可以通过url传参，传给请求的对象。..?callback=list..
+        // 标签请求返回数据。list('{}..'),直接调用先定义好的list函数。
+        document.head.appendChild(TAG);
+    }
+    // 回调函数
+    function list(arg) {
+        document.head.removeChild(TAG);
+    }
+</script>
+
+</body>
+</html>

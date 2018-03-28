@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<style>
+    *{
+        margin: 0;
+    }
+    #menu .item{
+        display: block;
+        padding: 10px 5px;
+        border-bottom: 1px solid lightcoral;
+
+    }
+    #menu .item:hover{
+        background-color: lightcoral;
+    }
+    #menu .item.active{
+        background-color: lightcoral;
+    }
+    a{
+        text-decoration: none;
+    }
+    a:link {
+        color: black;
+    }
+    a:visited{
+        color: black;
+    }
+    a:hover{
+        color: black;
+    }
+    a:active{
+        color: black;
+    }
+    .shade{
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        background-color: dimgray;
+        opacity: 0.7;
+        z-index: 99;
+    }
+    .modal{
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        width: 400px;
+        height: 300px;
+        margin-top: -200px;
+        margin-left: -150px;
+        z-index: 100;
+        background-color: azure;
+    }
+    .edit{
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        width: 400px;
+        height: 300px;
+        margin-top: -200px;
+        margin-left: -150px;
+        z-index: 100;
+        background-color: azure;
+    }
+    .hide{
+        display: none;
+    }
+    .remove{
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        width: 200px;
+        height: 100px;
+        margin-top: -50px;
+        margin-left: -50px;
+        z-index: 100;
+        background-color: azure;
+    }
+    .pagination a{
+        background-color: lightcoral;
+        color: azure;
+        padding: 2px 4px;
+        border-radius: 5px 5px 5px 5px;
+        display: inline-block;
+        margin: 3px;
+    }
+    .pagination a.active{
+        background-color: dimgray;
+        color: azure;
+    }
+
+</style>
+
+{% block css %} {% endblock %}
+<body>
+
+<div style="background-color: darkgray; height: 50px;">
+    <div style="float: right; clear: both; margin-top: 10px;">
+        用户名：{{ username }} | <a href="/logout">退出</a>
+    </div>
+</div>
+
+<div>
+    <div id="menu" style="background-color: cornflowerblue; width: 100px; bottom: 0; position: absolute; top: 50px;">
+        <a href="/student" id="menu_student" class="item">学生管理</a>
+        <a href="/teacher" id="menu_teacher" class="item">教师管理</a>
+        <a href="/classes" id="menu_classes" class="item">班级管理</a>
+        <a href="/index" class="item">返回</a>
+    </div>
+    <div style="margin-left: 150px; margin-top: 20px;">
+        {% block content %}{% endblock %}
+    </div>
+</div>
+
+<script src="/static/js/jquery-3.3.1.js"></script>
+
+{% block js %} {% endblock %}
+
+</body>
+</html>

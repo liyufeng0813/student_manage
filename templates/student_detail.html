@@ -1,0 +1,20 @@
+{% extends 'layout.html' %}
+
+{% block css %}
+{% endblock %}
+
+
+{% block content %}
+    <h1>{{ student_detail_info.name }} 的详情页！</h1>
+    <br>
+    <br>
+    <h3>名字： {{ student_detail_info.name }}</h3>
+    <br>
+    <h3>邮箱: {{ student_detail_info.email }}</h3>
+    <br>
+    <h3>班级名字: {{ student_detail_info.cls.caption }}</h3>
+{% endblock %}
+
+
+{% block js %}
+{% endblock %}

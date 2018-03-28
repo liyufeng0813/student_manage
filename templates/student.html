@@ -1,0 +1,221 @@
+{% extends 'layout.html' %}
+
+
+{% block student %}
+{% endblock %}
+
+
+{% block content %}
+    <div style="margin-bottom: 10px;">
+        <h3>学生列表</h3>
+        <button id="ajax_submit_button">Ajax提交</button>
+        <button><a href="/student_form_add">表单提交</a></button>
+    </div>
+
+    <table border="1px" cellpadding="7px">
+        <thead>
+            <tr>
+                <th class="hide">ID</th>
+                <th>姓名</th>
+                <th>邮箱</th>
+                <th>班级</th>
+                <th>操作</th>
+                <th class="hide">班级ID</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in student_info %}
+                <tr>
+                    <td student="id" class="hide">{{ student.id }}</td>
+                    <td student="name"><a href="/student_detail?sid={{ student.id }}">{{ student.name }}</a></td>
+                    <td student="email">{{ student.email }}</td>
+                    <td student="cls">{{ student.cls.caption }}</td>
+                    <td student="cls_id" class="hide">{{ student.cls.id }}</td>
+                    <td><button class="student-edit">编辑</button><button class="student-delete" style="background-color: red">删除</button></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="pagination">
+        {{ pager }}
+    </div>
+
+    <div class="add modal hide">
+        <input type="text" placeholder="学生姓名" name="name">
+        <br>
+        <br>
+        <input type="text" placeholder="邮箱地址" name="email">
+        <br>
+        <br>
+        <select name="cls" id="">
+            <option value="0">选择一个班级</option>
+            {% for cls in class_info %}
+                <option value="{{ cls.id }}">{{ cls.caption }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <br>
+        <input type="button" value="取消" id="ajax_modal_cancel">
+        <input type="button" value="ajax提交" id="ajax_modal_submit">
+        <br>
+        <br>
+        <b><span id="ajax_message"></span></b>
+    </div>
+    <div class="edit modal hide">
+        <input type="text" name="id" class="hide">
+        <input type="text" name="name" placeholder="学生姓名">
+        <br><br>
+        <input type="text" name="email" placeholder="邮箱地址">
+        <br><br>
+        <select name="cls" id="">
+            <option value="0" id="fixed">选择班级</option>
+            {% for cls in class_info %}
+                <option value="{{ cls.id }}">{{ cls.caption }}</option>
+            {% endfor %}
+        </select>
+        <br><br>
+        <input type="button" value="取消" id="ajax_edit_cancel_button">
+        <input type="button" value="ajax_提交" id="ajax_edit_submit_button">
+        <br><br>
+        <b><span id="edit_message"></span></b>
+    </div>
+    <div class="delete modal hide" style="width:200px; height:100px;">
+        <input type="text" name="id" class="hide">
+        <b><span id="delete_message"></span></b>
+        <br>
+        <br>
+        <input type="button" value="取消" id="delete_cancel">
+        <input type="button" value="确定" id="delete_submit">
+    </div>
+    <div class="shade hide"></div>
+
+{% endblock %}
+
+
+{% block js %}
+    <script src="/static/js/jquery-3.3.1.js"></script>
+    <script>
+        $(function () {
+            $('#menu_student').addClass('active');
+            bindAjaxSubmitButton();
+            bindAjaxModalCancel();
+            bindAjaxModalSubmit();
+            bindStudentEdit();
+            bindAjaxEditCancelButton();
+            bindStudentEditSubmit();
+            bindStudentDelete();
+            bindStudentDeleteCancel();
+            bindStudentDeleteSubmit();
+        });
+
+        function bindAjaxSubmitButton() {
+            $('#ajax_submit_button').click(function () {
+                $('.add.modal, .shade').removeClass('hide');
+            })
+        }
+
+        function bindAjaxModalCancel() {
+            $('#ajax_modal_cancel').click(function () {
+                $('.modal, .shade').addClass('hide');
+                $('.modal input[name="name"]').val("");
+                $('.modal input[name="email"]').val("");
+                $('#ajax_message').html('');
+                $('.modal select').val(0);
+            })
+        }
+
+        function bindAjaxModalSubmit() {
+            $('#ajax_modal_submit').click(function () {
+                var name = $('.modal input[name="name"]').val();
+                var email = $('.modal input[name="email"]').val();
+                var cls = $('.modal select[name="cls"]').val();
+                $.ajax({
+                    url: '/student_ajax_add',
+                    type: 'POST',
+                    data: {name: name, email: email, cls: cls, csrfmiddlewaretoken: '{{ csrf_token }}'},
+                    success: function (response) {
+                        response = JSON.parse(response);
+                        if (response.status) {
+                            $('.modal, .shade').addClass('hide');
+                            location.reload();
+                        }else{
+                            $('#ajax_message').html(response.message);
+                        }
+                    }
+                })
+            })
+        }
+
+        function bindStudentEdit() {
+            $('tbody').on('click', '.student-edit', function () {
+                $('.edit.modal, .shade').removeClass('hide');
+                var tds = $(this).parent().prevAll();
+                $('.edit.modal input[name="id"]').val(tds[4].innerHTML);
+                $('.edit.modal input[name="name"]').val(tds[3].innerText);
+                $('.edit.modal input[name="email"]').val(tds[2].innerHTML);
+                $('.edit.modal #fixed').html('--'+tds[1].innerHTML+'--').attr('value', tds[0].innerHTML);
+            });
+        }
+
+        function bindStudentEditSubmit() {
+            $('.edit.modal #ajax_edit_submit_button').click(function () {
+                var id = $('.edit.modal input[name="id"]').val();
+                var name = $('.edit.modal input[name="name"]').val();
+                var email = $('.edit.modal input[name="email"]').val();
+                var cls = $('.edit.modal select[name="cls"]').val();
+                $.ajax({
+                    url: '/student_edit',
+                    type: 'POST',
+                    data: {id: id, name: name, email: email, cls: cls, csrfmiddlewaretoken: '{{ csrf_token }}'},
+                    success: function (response) {
+                        response = JSON.parse(response);
+                        if (response.status){
+                            $('.edit.modal, .shade').addClass('hide');
+                            location.reload();
+                        }else{
+                            $('.edit.modal #edit_message').html(response.message);
+                        }
+                    }
+                })
+            })
+        }
+
+        function bindStudentDelete() {
+            $('tbody').on('click', '.student-delete', function () {
+                var tds = $(this).parent().prevAll();
+                $('.delete.modal input[name="id"]').val(tds[4].innerHTML);
+                $('.delete.modal #delete_message').html('确定删除 ' + tds[3].innerHTML + ' 吗?');
+                $('.delete.modal, .shade').removeClass('hide');
+            })
+        }
+
+        function bindStudentDeleteSubmit() {
+            $('.delete.modal #delete_submit').click(function () {
+                var id = $('.delete.modal input[name="id"]').val();
+                $.ajax({
+                    url: '/student_delete',
+                    type: 'POST',
+                    data: {id: id, csrfmiddlewaretoken: '{{ csrf_token }}'},
+                    success: function (response) {
+                        $('.delete.modal, .shade').addClass('hide');
+                        location.reload();
+                    }
+                })
+            })
+        }
+
+        function bindStudentDeleteCancel() {
+            $('.delete.modal #delete_cancel').click(function () {
+                $('.delete.modal, .shade').addClass('hide');
+            })
+        }
+
+        function bindAjaxEditCancelButton() {
+            $('#ajax_edit_cancel_button').click(function () {
+                $('.edit, .shade').addClass('hide');
+                $('.edit #edit_message').html("");
+            })
+        }
+    </script>
+{% endblock %}

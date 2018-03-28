@@ -1,0 +1,208 @@
+{% extends 'layout.html' %}
+
+
+{% block css %}
+{% endblock %}
+
+
+{% block content %}
+    <div style="margin-bottom: 10px">
+        <h3>班级列表</h3>
+        <input type="button" value="Ajax提交" id="id_add">
+        <button><a href="/class_add">表单提交</a></button>
+    </div>
+
+    <table border="1" cellpadding="7px">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>班级名字</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in data %}
+            <tr>
+                <td defined="id">{{ item.id }}</td>
+                <td defined="caption">{{ item.caption }}</td>
+                <td><a class="classes-edit">编辑</a>|<a class="classes-delete">删除</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="pagination">
+        {{ pager }}
+    </div>
+
+    <div class="modal hide">
+        <input name="caption" type="text" placeholder="班级名">
+        <input id="id_modal_cancel" type="button" value="取消">
+        <input type="button" id="modal_ajax_submit" value="ajax提交">
+        <br>
+        <b><span id="ajax_message"></span></b>
+    </div>
+
+    <div class="edit hide">
+        <input type="text" name="id" class="hide">
+        <input name="caption" type="text" placeholder="班级名">
+        <input id="edit_modal_cancel" type="button" value="取消">
+        <input type="button" id="edit_ajax_submit" value="ajax提交">
+        <br>
+        <b><span id="edit_ajax_message"></span></b>
+    </div>
+
+    <div class="shade hide"></div>
+
+    <div class="remove hide">
+        <input id="id_remove_cancel" type="button" value="取消">
+        <input type="button" value="确定" id="remove_class">
+        <input type="text" name="id" class="hide">
+    </div>
+
+{% endblock %}
+
+
+{% block js %}
+    <script>
+        $(function () {
+            $('#menu_classes').addClass('active');
+            bindAddEvent();
+            bindCancelEvent();
+            bindClaasesDeleteEvent();
+            bindRemoveCancelEvent();
+            bindMoalAjaxSubmitEvent();
+            bindClassesEditEvent();
+            bindEditCancelEvent();
+            bindEditAjaxSubmitEvent();
+            bindClassesDeleteSubmitEvent();
+        });
+        function bindAddEvent() {
+            $('#id_add').click(function () {
+                $('.modal, .shade').removeClass('hide')
+            });
+        }
+        function bindCancelEvent() {
+            $('#id_modal_cancel').click(function () {
+                $('.modal, .shade').addClass('hide');
+                $('.modal input[name="caption"]').val("");
+                $('#ajax_message').html("");
+            })
+        }
+        function bindRemoveCancelEvent() {
+            $('#id_remove_cancel').click(function () {
+                $('.remove, .shade').addClass('hide')
+            })
+        }
+        function bindClaasesDeleteEvent() {
+            /*
+            $('td .classes-delete').click(function () {
+                $('.remove, .shade').removeClass('hide')
+            })
+            */
+            // 委托形的绑定事件
+            $('tbody').on('click', '.classes-delete', function () {
+                var tdId = $(this).parent().prevAll();
+                $('.remove input[name="id"]').val(tdId[1].innerText);
+                $('.remove, .shade').removeClass('hide');
+            })
+        }
+        function bindClassesDeleteSubmitEvent() {
+            $('.remove #remove_class').click(function () {
+                nid = $('.remove input[name="id"]').val();
+                $.ajax({
+                    url: '/remove_classes',
+                    type: 'POST',
+                    data: {id: nid, csrfmiddlewaretoken: '{{ csrf_token }}'},
+                    success: function () {
+                        $('.remove, .shade').addClass('hide');
+                        location.reload();
+                    }
+                })
+            })
+        }
+        function bindClassesEditEvent() {
+            $('tbody tr td .classes-edit').click(function () {
+                $('.edit, .shade').removeClass('hide');
+                /*
+                var tds = $(this).parent().prevAll();
+                $('.edit input[name="caption"]').val(tds[0].innerText);
+                $('.edit input[name="id"]').val(tds[1].innerText);
+                */
+                $(this).parent().prevAll().each(function () {
+                    var text = $(this).text();
+                    var name = $(this).attr('defined');
+                    $('.edit input[name="'+ name + '"]').val(text);
+                })
+            })
+        }
+        function bindEditCancelEvent(){
+            $('.edit #edit_modal_cancel').click(function () {
+                $('.edit, .shade').addClass('hide');
+
+            })
+        }
+        function bindEditAjaxSubmitEvent() {
+            $('.edit #edit_ajax_submit').click(function () {
+                var id = $('.edit input[name="id"]').val();
+                var value = $('.edit input[name="caption"]').val();
+                $.ajax({
+                    url: '/edit_classes',
+                    type: 'POST',
+                    data : {id: id, caption: value},
+                    success: function (response) {
+                        response = JSON.parse(response);
+                        if (response.status){
+                            $('.edit, .shade').addClass('hide');
+                            location.reload();
+                        }else{
+                            document.getElementById('edit_ajax_message').innerHTML = response.message;
+                        }
+                    }
+                })
+            })
+        }
+        function bindMoalAjaxSubmitEvent() {
+            $("#modal_ajax_submit").click(function () {
+                    var value = $('.modal input[name="caption"]').val();
+                    $.ajax({
+                        url:'/classes',
+                        type: 'POST',
+                        data: {caption: value},
+                        success: function (reponse) {
+                            reponse = JSON.parse(reponse);
+                            if(reponse.status) {
+                                //location.reload();  // 整个页面刷新
+                                // 通过js在table表格后面增加一行。
+                                var tr = document.createElement('tr');
+                                var td1 = document.createElement('td');
+                                var td2 = document.createElement('td');
+                                var td3 = document.createElement('td');
+                                td1.innerHTML = reponse.data.id;
+                                td2.innerHTML = reponse.data.caption;
+                                td3.innerHTML = "|";
+                                var a1 = document.createElement('a');
+                                a1.innerHTML = "编辑";
+                                a2 = document.createElement('a');
+                                a2.innerHTML = "删除";
+                                a2.className = "classes-delete";
+                                $(td3).prepend(a1);
+                                $(td3).append(a2);
+                                $(tr).append(td1);
+                                $(tr).append(td2);
+                                $(tr).append(td3);
+                                $('table tbody').append(tr);
+                                $('.modal input[name="caption"]').val("");
+                                $('.modal, .shade').addClass('hide')
+                            }else{
+                                var ajax_message = document.getElementById('ajax_message');
+                                ajax_message.innerHTML = reponse.message;
+                            }
+                        }
+                    })
+                }
+            )
+        }
+
+    </script>
+{% endblock %}

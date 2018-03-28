@@ -1,0 +1,38 @@
+{% extends 'layout.html' %}
+
+
+{% block css %}
+{% endblock %}
+
+
+{% block content %}
+    <h2>表单编辑</h2>
+    <form action="/teacher_form_edit-{{ teacher_info.id }}" method="post">
+        {% csrf_token %}
+        <p class="hide">ID：<input type="text" name="id" value="{{ teacher_info.id }}"></p>
+        <p>姓名：<input type="text" name="name" value="{{ teacher_info.name }}"></p>
+        <p>邮箱：<input type="text" name="email" value="{{ teacher_info.email }}"></p>
+        <p>班级选择：</p>
+        <p>
+        {% for cls in class_all_info %}
+            {% if cls.id in class_id_list %}
+                <input type="checkbox" name="cls[]" value="{{ cls.id }}" checked="checked" style="background-color: lightcoral">{{ cls.caption }}
+            {% else %}
+                <input type="checkbox" name="cls[]" value="{{ cls.id }}">{{ cls.caption }}
+            {% endif %}
+        {% endfor %}
+        </p>
+        <input type="submit" value="submit">
+    </form>
+    <b>{{ message }}</b>
+
+{% endblock %}
+
+
+{% block js %}
+<script>
+    $(function () {
+        $('#menu_teacher').addClass('active');
+    })
+</script>
+{% endblock %}

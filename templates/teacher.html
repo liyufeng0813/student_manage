@@ -1,0 +1,102 @@
+{% extends 'layout.html' %}
+
+
+{% block css %}
+{% endblock %}
+
+
+{% block content %}
+    <h3>教师列表</h3>
+    <div>
+        <button><a href="/teacher_form_add">表单提交</a></button>
+    </div>
+    <table border="1px" cellpadding="5px">
+        <thead>
+            <tr>
+                <th class="hide">ID</th>
+                <th>姓名</th>
+                <th>email</th>
+                <th>班级</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+
+        <!--方式一：对数据库的操作次数过多，影响性能。-->
+{#        <tbody>#}
+{#        {% for teacher in teacher_info %}#}
+{#            <tr>#}
+{#                <td>{{ teacher.id }}</td>#}
+{#                <td>{{ teacher.name }}</td>#}
+{#                <td>{{ teacher.email }}</td>#}
+{#                <td>{% for i in teacher.cls.all %}{{ i.caption }} {% endfor %}</td>#}
+{#            </tr>#}
+{#        {% endfor %}#}
+{#        </tbody>#}
+
+        <tbody>
+            {% for nid, t in teacher_dict.items %}
+                <tr>
+                    <td class="hide">{{ t.nid }}</td>
+                    <td>{{ t.name }}</td>
+                    <td>{{ t.email }}</td>
+                    <td>
+                        {% for cls in t.cls_list %}
+                            <span>{{ cls.cls__caption }}{% if not forloop.last %} | {% endif %}</span>
+                        {% endfor %}
+                    </td>
+                    <td><button><a href="/teacher_form_edit-{{ t.nid }}">编辑</a></button><button id="teacher_delete_button" style="background-color: red">删除</button></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {{ pager }}
+
+    <div class="shade hide"></div>
+    <div class="modal delete hide" style="width:200px; height:100px;">
+        <input type="text" name="id" class="hide">
+        <p><b id="delete_message"></b></p>
+        <button id="teacher_delete_cancel">取消</button>
+        <button id="teacher_delete_submit">确定</button>
+    </div>
+{% endblock %}
+
+
+{% block js %}
+    <script>
+        $(function () {
+            $('#menu_teacher').addClass('active');
+            bindTeacherDeleteButton();
+            bindTeacherDeleteCancel();
+            bindTeacherDeleteSubmit();
+        });
+        function bindTeacherDeleteButton () {
+            $('tbody').on('click', '#teacher_delete_button', function () {
+                var tds = $(this).parent().prevAll();
+                $('.modal.delete input[name="id"]').val(tds[3].innerHTML);
+                $('.modal.delete #delete_message').html('确定删除 ' + tds[2].innerHTML + ' 老师吗？');
+                $('.shade, .modal.delete').removeClass('hide');
+            })
+        }
+        function bindTeacherDeleteCancel(){
+            $('.modal.delete #teacher_delete_cancel').click(function () {
+                $('.modal.delete, .shade').addClass('hide');
+                $('.modal.delete #delete_message').html('');
+            })
+        }
+        function bindTeacherDeleteSubmit() {
+            $('.modal.delete #teacher_delete_submit').click(function () {
+                var tid = $('.modal.delete input[name="id"]').val();
+                $.ajax({
+                    url: '/teacher_ajax_delete',
+                    type: 'POST',
+                    data: {id: tid, csrfmiddlewaretoken: '{{ csrf_token }}'},
+                    success: function () {
+                        $('.modal.delete, .shade').addClass('hide');
+                        location.reload();
+                    }
+                })
+            })
+        }
+    </script>
+{% endblock %}

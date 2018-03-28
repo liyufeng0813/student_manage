@@ -1,0 +1,33 @@
+{% extends 'layout.html' %}
+
+
+{% block css %}
+{% endblock %}
+
+
+{% block content %}
+    <h2>表单添加</h2>
+    <form action="/teacher_form_add" method="post">
+        {% csrf_token %}
+        <p>姓名：<input type="text" name="name"></p>
+        <p>邮箱：<input type="text" name="email"></p>
+        <p>班级选择：</p>
+        <p>
+        {% for cls in class_info %}
+            <input type="checkbox" name="cls[]" value="{{ cls.id }}">{{ cls.caption }}
+        {% endfor %}
+        </p>
+        <input type="submit" value="submit">
+    </form>
+    <b>{{ message }}</b>
+
+{% endblock %}
+
+
+{% block js %}
+<script>
+    $(function () {
+        $('#menu_teacher').addClass('active');
+    })
+</script>
+{% endblock %}
